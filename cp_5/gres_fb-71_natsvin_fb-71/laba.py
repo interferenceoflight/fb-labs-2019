@@ -1,6 +1,4 @@
 import random
-import sys
-sys.setrecursionlimit(1500)
 dec = 64567844567
 print(hex(dec)[2:].upper())
 
@@ -16,19 +14,21 @@ class RSA_UI:
         self.needed = self.check_nums(self.keys[0], self.keys[1], self.keys[2], self.keys[3])
         self.d = self.inverse(self.e, self.needed[3])
 
-
     @staticmethod
-    def miller_rabin(n, k):
-        q, r = 0, n - 1
+    def test_miller_rabin(n):
+        r = n-1
+        q = 0
         while r % 2 == 0:
-            q += 1
-            r //= 2
-        for _ in range(k):
+            q = q + 1
+            r = r // 2
+        for temp in range(10):
             a = random.randrange(2, n - 1)
             x = pow(a, r, n)
-            if x == 1 or x == n - 1:
+            if x == n - 1:
                 continue
-            for _ in range(q - 1):
+            if x == 1:
+                continue
+            for tmp in range(q - 1):
                 x = pow(x, 2, n)
                 if x == n - 1:
                     break
@@ -41,7 +41,7 @@ class RSA_UI:
         while len(numbers) < 4:
             new_num = random.getrandbits(128)
             print(new_num)
-            if self.miller_rabin(new_num, 50) is True:
+            if self.test_miller_rabin(new_num) is True:
                 numbers.append(new_num)
         return numbers
 
@@ -54,11 +54,10 @@ class RSA_UI:
             phi_1 = (n3 - 1) * (n4 - 1)
             print('Hexed m: ', hex(m)[2:].upper())
             print('Hexed p*q: ', hex(n)[2:].upper())
-            print('Hexed p*q: ', n)
             return n, m, phi_1, phi
 
     def encrypt(self, decimal):
-        n = self.needed[0]
+        n = self.keys[0]
         e = self.e
         return pow(decimal, e, n)
 
@@ -76,7 +75,6 @@ class RSA_UI:
             l = m
             m = a % m
             a = l
-            l = z
             z = fin - tmp * z
             fin = l
 
@@ -87,7 +85,7 @@ class RSA_UI:
 
     def decrypt(self):
         enc = self.encrypt(dec)
-        return pow(enc, self.d, self.needed[0])
+        return pow(enc, self.d, self.keys[0])
 
     def sign(self, decimal):
         s = pow(decimal, self.d, self.needed[0])
@@ -113,9 +111,7 @@ class RSA_UI:
 
 RSA_start = RSA_UI()
 encrypted = RSA_start.encrypt(dec)
-print ('Encrypted message:', encrypted)
-print('Sign of message', RSA_start.sign(dec)[0])
-print('Encrypted message:',hex(encrypted)[2:].upper())
+print('Encrypted message:', hex(encrypted)[2:].upper())
 print('Message:', dec, '\nDecryption result:', RSA_start.decrypt())
 sent = RSA_start.send_key()
 rec = RSA_start.receive_key()
@@ -123,5 +119,5 @@ print('Sign of message', hex(RSA_start.sign(dec)[0])[2:].upper())
 print(hex(RSA_start.e)[2:])
 print(hex(RSA_start.verify_sign(dec))[2:].upper())
 print('Sent: ', hex(sent[0])[2:].upper(), hex(sent[1])[2:].upper(), hex(sent[2])[2:].upper(), hex(sent[3])[2:].upper())
-print('Received Key: ', hex(rec[0])[2:].upper(), hex(rec[1])[2:].upper())
+print('Received Keys: ', hex(rec[0])[2:].upper(), hex(rec[1])[2:].upper())
 
